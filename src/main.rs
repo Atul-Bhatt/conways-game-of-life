@@ -1,4 +1,4 @@
-use ggez::{GameResult, event, Context};
+use ggez::{graphics, GameResult, event, Context};
 
 const GRID_SIZE: (i16, i16) = (30, 20);
 const GRID_CELL_SIZE: (i16, i16) = (32, 32);
@@ -17,7 +17,7 @@ struct Grid {
 
 impl Grid {
     fn update(&mut self) {
-        todo!()
+        loop { }
     }
 }
 
@@ -34,6 +34,13 @@ impl event::EventHandler for InitialState {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
+        // Create a canvas that renders to the frame
+        let mut canvas = graphics::Canvas::from_frame(
+            ctx, graphics::Color::from([0.0, 1.0, 0.0, 1.0])
+        );
+
+        canvas.finish(ctx)?;
+
         Ok(())
     }
 }
