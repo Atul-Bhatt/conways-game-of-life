@@ -36,7 +36,7 @@ struct MainState {
 
 
 impl MainState {
-    fn new() -> Self {
+    fn new(ctx: &mut Context) -> Self {
         MainState { 
             first_cell: na::Point2::new(10., 10.),
         }
@@ -54,5 +54,9 @@ impl event::EventHandler for MainState {
 }
 
 fn main() -> GameResult {
+    let cb = ggez::ContextBuilder::new("Game_of_Life", "Atul");
+    let (mut ctx, event_loop) = cb.build()?;
+    let state = MainState::new(&mut ctx);
+    event::run(ctx, event_loop, state);
     Ok(())
 }
