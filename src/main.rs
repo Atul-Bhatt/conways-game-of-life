@@ -1,4 +1,5 @@
 use ggez::{graphics, GameResult, event, Context};
+use nalgebra as na;
 
 const GRID_SIZE: (i16, i16) = (30, 20);
 const GRID_CELL_SIZE: (i16, i16) = (32, 32);
@@ -29,66 +30,29 @@ impl Cell {
     }
 }
 
-#[derive(Copy, Clone)]
-struct Grid {
-    pub x: i32,
-    pub y: i32,
-}
-
-impl Grid {
-    fn update(&mut self) {
-        loop { }
-    }
-
-    fn draw(self, canvas: &mut graphics::Canvas) {
-        canvas.draw(
-            &graphics::Quad,
-            graphics::DrawParam::new()
-                .dest_rect(graphics::Rect::new(1., 1., 150., 150.))
-                .color([0., 200., 0., 1.])
-        );
-    }
-}
-
 struct MainState {
-    grid: Grid
+    first_cell: na::Point2<f32>,
+}
+
+
+impl MainState {
+    fn new() -> Self {
+        MainState { 
+            first_cell: na::Point2::new(10., 10.),
+        }
+    }
 }
 
 impl event::EventHandler for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
-        while ctx.time.check_update_time(FPS) {
-            self.grid.update();
-            self.draw(ctx)?;
-        }
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        // Create a canvas that renders to the frame
-        let mut canvas = graphics::Canvas::from_frame(
-            ctx, graphics::Color::from([0.0, 1.0, 0.0, 1.0])
-        );
-
-        self.grid.draw(&mut canvas);
-
-        canvas.finish(ctx)?;
-
         Ok(())
     }
 }
 
-impl MainState {
-    fn new() -> MainState {
-        MainState { grid: Grid { x:0, y:0 }}
-    }
-}
-
 fn main() -> GameResult {
-
-    let (ctx, events_loop) = ggez::ContextBuilder::new("Game of Life", "Atul Bhatt")
-        .window_setup(ggez::conf::WindowSetup::default().title("Game of Life"))
-        .window_mode(ggez::conf::WindowMode::default().dimensions(SCREEN_SIZE.0, SCREEN_SIZE.1))
-        .build()?;
-
-    event::run(ctx, events_loop, MainState::new())
+    Ok(())
 }
