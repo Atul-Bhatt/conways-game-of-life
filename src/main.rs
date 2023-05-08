@@ -1,5 +1,6 @@
 use ggez::{graphics, GameResult, event, Context};
 use ggez::nalgebra as na;
+use rand::{self, thread_rng, Rng};
 
 const GRID_SIZE: (i16, i16) = (30, 20);
 const GRID_CELL_SIZE: (f32, f32) = (16., 16.);
@@ -32,6 +33,25 @@ fn draw_cell(ctx: &mut Context, cell: Cell) -> GameResult {
     Ok(())
 }
 
+fn new_random_cells(ctx: &mut Context) -> Vec<Cell> {
+    let screen_w = graphics::drawable_size(&ctx).0;
+    let mut rng = thread_rng();
+    let mut random_cells: Vec<Cell> = vec![];
+
+    for _ in 0..50 {
+        let rand_num_x = (rng.gen::<i32>() as f32 % screen_w/4.).abs();
+        let rand_num_y = (rng.gen::<i32>() as f32 % screen_w/2.).abs();
+
+        // floor rand_num values to closest 16x16 value
+        let x = (rand_num_x - (rand_num_x % 16.)) as f32;
+        let y = (rand_num_y - (rand_num_y % 16.)) as f32;
+        println!("{x}, {y}");
+        random_cells.push(Cell::new(na::Point2::new(x, y)));
+    }
+
+    random_cells
+}
+
 #[derive(Clone, Debug)]
 struct Cell {
     alive: bool,
@@ -57,15 +77,15 @@ impl MainState {
     fn new(ctx: &mut Context) -> Self {
         MainState { 
             curr_cell: na::Point2::new(GRID_CELL_SIZE.0, GRID_CELL_SIZE.1),
-            cell_vec: vec![],
+            cell_vec: new_random_cells(ctx),
         }
     }
 }
 
 impl event::EventHandler for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
-        self.curr_cell.x += GRID_CELL_SIZE.0;
-        self.cell_vec.push(Cell::new(self.curr_cell.clone()));
+        // self.curr_cell.x += GRID_CELL_SIZE.0;
+        // self.cell_vec.push(Cell::new(self.curr_cell.clone()));
         Ok(())
     }
 
@@ -75,7 +95,7 @@ impl event::EventHandler for MainState {
         for cell in self.cell_vec.clone() {
             draw_cell(ctx, cell)?;
         }
-        
+
         graphics::present(ctx)?;
         Ok(())
     }

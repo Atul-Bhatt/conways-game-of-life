@@ -309,6 +309,7 @@ name = "conways_game_of_life"
 version = "0.1.0"
 dependencies = [
  "ggez",
+ "rand 0.8.5",
 ]
 
 [[package]]
