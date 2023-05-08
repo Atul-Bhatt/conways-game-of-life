@@ -1,72 +1,81 @@
 use ggez::{graphics, GameResult, event, Context};
-use nalgebra as na;
+use ggez::nalgebra as na;
 
-const GRID_SIZE: (f32, f32) = (30., 20.);
-const GRID_CELL_SIZE: (f32, f32) = (32., 32.);
+const GRID_SIZE: (i16, i16) = (30, 20);
+const GRID_CELL_SIZE: (f32, f32) = (16., 16.);
 
 const SCREEN_SIZE: (f32, f32) = (
     GRID_SIZE.0 as f32 * GRID_CELL_SIZE.0 as f32,
     GRID_SIZE.1 as f32 * GRID_CELL_SIZE.1 as f32,
 );
 
-const FPS: u32 = 120;
+const FPS: f32 = 120.;
+
+fn draw_cell(ctx: &mut Context, cell: Cell) -> GameResult {
+    let cell_rect = graphics::Rect::new(
+        cell.cell_pos.x,
+        cell.cell_pos.y,
+        GRID_CELL_SIZE.0,
+        GRID_CELL_SIZE.1,
+     );
+
+    let cell_mesh = graphics::Mesh::new_rectangle(
+        ctx,
+        graphics::DrawMode::fill(),
+        cell_rect,
+        graphics::Color::from_rgb(0, 255, 0),
+    ).unwrap();
+
+    let draw_param = graphics::DrawParam::default();
+    graphics::draw(ctx, &cell_mesh, draw_param)?;
+
+    Ok(())
+}
 
 #[derive(Clone, Debug)]
 struct Cell {
     alive: bool,
+    cell_pos: na::Point2<f32>
 }
 
 impl Cell {
-    fn new(alive: bool) -> Cell {
-        Self { alive }
-    }
-
-    fn is_alive(&self) -> bool {
-        self.alive
-    }
-
-    fn set_state(&mut self, state: bool) {
-        self.alive = state;
+    fn new(pos: na::Point2<f32>) -> Self {
+        Cell {
+            alive: true,
+            cell_pos: pos,
+        }
     }
 }
 
 struct MainState {
-    cell_pos: na::Point2<f32>,
+    curr_cell: na::Point2<f32>,
+    cell_vec: Vec<Cell>,
 }
 
 
 impl MainState {
     fn new(ctx: &mut Context) -> Self {
         MainState { 
-            cell_pos: na::Point2::new(10., 10.),
+            curr_cell: na::Point2::new(GRID_CELL_SIZE.0, GRID_CELL_SIZE.1),
+            cell_vec: vec![],
         }
     }
 }
 
 impl event::EventHandler for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
+        self.curr_cell.x += GRID_CELL_SIZE.0;
+        self.cell_vec.push(Cell::new(self.curr_cell.clone()));
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::clear(ctx, graphics::BLACK);
 
-        let cell_rect = graphics::Rect::new(
-            10.,
-            10.,
-            GRID_CELL_SIZE.0,
-            GRID_CELL_SIZE.1,
-         );
-
-        let cell_mesh = graphics::Mesh::new_rectangle(
-            ctx,
-            graphics::DrawMode::fill(),
-            cell_rect,
-            graphics::WHITE,
-        )?;
-
-        let draw_param = graphics::DrawParam::default();
-        graphics::draw(ctx, &cell_mesh, draw_param)?;
+        for cell in self.cell_vec.clone() {
+            draw_cell(ctx, cell)?;
+        }
+        
         graphics::present(ctx)?;
         Ok(())
     }
