@@ -1,8 +1,8 @@
 use ggez::{graphics, GameResult, event, Context};
 use nalgebra as na;
 
-const GRID_SIZE: (i16, i16) = (30, 20);
-const GRID_CELL_SIZE: (i16, i16) = (32, 32);
+const GRID_SIZE: (f32, f32) = (30., 20.);
+const GRID_CELL_SIZE: (f32, f32) = (32., 32.);
 
 const SCREEN_SIZE: (f32, f32) = (
     GRID_SIZE.0 as f32 * GRID_CELL_SIZE.0 as f32,
@@ -31,14 +31,14 @@ impl Cell {
 }
 
 struct MainState {
-    cell_pos: f32,
+    cell_pos: na::Point2<f32>,
 }
 
 
 impl MainState {
     fn new(ctx: &mut Context) -> Self {
         MainState { 
-            cell_pos: 0.0,
+            cell_pos: na::Point2::new(10., 10.),
         }
     }
 }
@@ -49,6 +49,25 @@ impl event::EventHandler for MainState {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
+        graphics::clear(ctx, graphics::BLACK);
+
+        let cell_rect = graphics::Rect::new(
+            10.,
+            10.,
+            GRID_CELL_SIZE.0,
+            GRID_CELL_SIZE.1,
+         );
+
+        let cell_mesh = graphics::Mesh::new_rectangle(
+            ctx,
+            graphics::DrawMode::fill(),
+            cell_rect,
+            graphics::WHITE,
+        )?;
+
+        let draw_param = graphics::DrawParam::default();
+        graphics::draw(ctx, &cell_mesh, draw_param)?;
+        graphics::present(ctx)?;
         Ok(())
     }
 }
