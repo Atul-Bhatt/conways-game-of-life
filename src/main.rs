@@ -128,13 +128,11 @@ impl event::EventHandler for MainState {
         let (screen_w, screen_h) = graphics::drawable_size(ctx);
         let mut new_snap: Vec<Cell> = vec![];
 
-        for x in 0..(screen_h as i32) {
-            for y in 0..(screen_w as i32) {
-                if (x % 16 ==0) && (y % 16 == 0) {
-                    calculate_alive_or_dead(
-                        Cell::new(x as f32, y as f32),
-                        &self.cell_vec, &mut new_snap);
-                }
+        for x in (0..(screen_h as i32)).step_by(16) {
+            for y in (0..(screen_w as i32)).step_by(16) {
+                calculate_alive_or_dead(
+                Cell::new(x as f32, y as f32),
+                &self.cell_vec, &mut new_snap);
             }
         }
 
