@@ -138,18 +138,15 @@ impl event::EventHandler for MainState {
 
         for x in 0..(screen_h as i32) {
             for y in 0..(screen_w as i32) {
-                calculate_alive_or_dead(
-                    Cell::new(x as f32, y as f32),
-                    &self.cell_vec, &mut new_snap);
+                if (x % 16 ==0) && (y % 16 == 0) {
+                    calculate_alive_or_dead(
+                        Cell::new(x as f32, y as f32),
+                        &self.cell_vec, &mut new_snap);
+                }
             }
         }
 
         self.cell_vec = new_snap;
-
-        for cell in self.cell_vec.clone() {
-            println!("{}", cell.position);
-        }
-
         Ok(())
     }
 
