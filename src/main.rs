@@ -2,15 +2,7 @@ use ggez::{graphics, GameResult, event, Context};
 use ggez::nalgebra as na;
 use rand::{self, thread_rng, Rng};
 
-const GRID_SIZE: (i16, i16) = (30, 20);
 const GRID_CELL_SIZE: (f32, f32) = (16., 16.);
-
-const SCREEN_SIZE: (f32, f32) = (
-    GRID_SIZE.0 as f32 * GRID_CELL_SIZE.0 as f32,
-    GRID_SIZE.1 as f32 * GRID_CELL_SIZE.1 as f32,
-);
-
-const FPS: f32 = 120.;
 
 fn draw_cell(ctx: &mut Context, cell: na::Point2<f32>) -> GameResult {
     let cell_rect = graphics::Rect::new(
