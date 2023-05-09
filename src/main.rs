@@ -73,16 +73,22 @@ fn calculate_alive_or_dead(cell: Cell, cell_snap: &Vec<Cell>, new_snap: &mut Vec
     let mut neighbour_count = 0;
 
     neighbour_count += check_neighbour(Cell::new(cell.position.x - 16., cell.position.y - 16.), cell_snap);
-    neighbour_count += check_neighbour(Cell::new(cell.position.x - 16., cell.position.y - 16.), cell_snap);
-    neighbour_count += check_neighbour(Cell::new(cell.position.x - 16., cell.position.y - 16.), cell_snap);
-    neighbour_count += check_neighbour(Cell::new(cell.position.x - 16., cell.position.y - 16.), cell_snap);
-    neighbour_count += check_neighbour(Cell::new(cell.position.x - 16., cell.position.y - 16.), cell_snap);
-    neighbour_count += check_neighbour(Cell::new(cell.position.x - 16., cell.position.y - 16.), cell_snap);
-    neighbour_count += check_neighbour(Cell::new(cell.position.x - 16., cell.position.y - 16.), cell_snap);
-    neighbour_count += check_neighbour(Cell::new(cell.position.x - 16., cell.position.y - 16.), cell_snap);
+    neighbour_count += check_neighbour(Cell::new(cell.position.x + 16., cell.position.y - 16.), cell_snap);
+    neighbour_count += check_neighbour(Cell::new(cell.position.x - 16., cell.position.y + 16.), cell_snap);
+    neighbour_count += check_neighbour(Cell::new(cell.position.x + 16., cell.position.y + 16.), cell_snap);
+    neighbour_count += check_neighbour(Cell::new(cell.position.x - 16., cell.position.y), cell_snap);
+    neighbour_count += check_neighbour(Cell::new(cell.position.x + 16., cell.position.y), cell_snap);
+    neighbour_count += check_neighbour(Cell::new(cell.position.x, cell.position.y + 16.), cell_snap);
+    neighbour_count += check_neighbour(Cell::new(cell.position.x, cell.position.y - 16.), cell_snap);
 
-    if neighbour_count == 2 || neighbour_count == 3 {
-        new_snap.push(cell);
+    if cell_snap.contains(&cell) {
+        if neighbour_count == 2 || neighbour_count == 3 {
+            new_snap.push(cell);
+        }
+    } else {
+        if neighbour_count == 3 {
+            new_snap.push(cell);
+        }
     }
 }
 
@@ -127,16 +133,18 @@ impl MainState {
 
 impl event::EventHandler for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
-        let cell_snap = self.cell_vec.clone();
+        let (screen_w, screen_h) = graphics::drawable_size(ctx);
         let mut new_snap: Vec<Cell> = vec![];
 
-        for cell in cell_snap.clone() {
-            calculate_alive_or_dead(cell, &cell_snap, &mut new_snap);
+        for x in 0..(screen_h as i32) {
+            for y in 0..(screen_w as i32) {
+                calculate_alive_or_dead(
+                    Cell::new(x as f32, y as f32),
+                    &self.cell_vec, &mut new_snap);
+            }
         }
 
         self.cell_vec = new_snap;
-
-        println!("Priting updated vector.");
 
         for cell in self.cell_vec.clone() {
             println!("{}", cell.position);
