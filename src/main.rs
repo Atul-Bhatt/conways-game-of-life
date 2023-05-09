@@ -12,10 +12,10 @@ const SCREEN_SIZE: (f32, f32) = (
 
 const FPS: f32 = 120.;
 
-fn draw_cell(ctx: &mut Context, cell: Cell) -> GameResult {
+fn draw_cell(ctx: &mut Context, cell: na::Point2<f32>) -> GameResult {
     let cell_rect = graphics::Rect::new(
-        cell.cell_pos.x,
-        cell.cell_pos.y,
+        cell.x,
+        cell.y,
         GRID_CELL_SIZE.0,
         GRID_CELL_SIZE.1,
      );
@@ -34,41 +34,85 @@ fn draw_cell(ctx: &mut Context, cell: Cell) -> GameResult {
 }
 
 fn new_random_cells(ctx: &mut Context) -> Vec<Cell> {
-    let screen_w = graphics::drawable_size(&ctx).0;
+    let (screen_w, screen_h) = graphics::drawable_size(&ctx);
     let mut rng = thread_rng();
     let mut random_cells: Vec<Cell> = vec![];
 
     for _ in 0..50 {
-        let rand_num_x = (rng.gen::<i32>() as f32 % screen_w/4.).abs();
-        let rand_num_y = (rng.gen::<i32>() as f32 % screen_w/2.).abs();
+        let mut rand_num_x = (rng.gen::<i32>() as f32 % screen_w/2.).abs();
+        let mut rand_num_y = (rng.gen::<i32>() as f32 % screen_h/2.).abs();
+
+        // Push initial points towards center
+        if rand_num_x < screen_w/4. {
+            rand_num_x += screen_w/4.;
+        }
+
+        if rand_num_y < screen_h/4. {
+            rand_num_y += screen_h/4.;
+        }
 
         // floor rand_num values to closest 16x16 value
         let x = (rand_num_x - (rand_num_x % 16.)) as f32;
         let y = (rand_num_y - (rand_num_y % 16.)) as f32;
-        println!("{x}, {y}");
-        random_cells.push(Cell::new(na::Point2::new(x, y)));
+
+        random_cells.push(Cell::new(x, y));
     }
 
     random_cells
 }
 
-#[derive(Clone, Debug)]
-struct Cell {
-    alive: bool,
-    cell_pos: na::Point2<f32>
-}
-
-impl Cell {
-    fn new(pos: na::Point2<f32>) -> Self {
-        Cell {
-            alive: true,
-            cell_pos: pos,
-        }
+fn check_neighbour(neighbour_coord: Cell, cell_snap: &Vec<Cell>) -> i32 {
+    if cell_snap.contains(&neighbour_coord) {
+        return 1;
+    } else {
+        return 0;
     }
 }
 
+fn calculate_alive_or_dead(cell: Cell, cell_snap: &Vec<Cell>, new_snap: &mut Vec<Cell>) {
+    let mut neighbour_count = 0;
+
+    neighbour_count += check_neighbour(Cell::new(cell.position.x - 16., cell.position.y - 16.), cell_snap);
+    neighbour_count += check_neighbour(Cell::new(cell.position.x - 16., cell.position.y - 16.), cell_snap);
+    neighbour_count += check_neighbour(Cell::new(cell.position.x - 16., cell.position.y - 16.), cell_snap);
+    neighbour_count += check_neighbour(Cell::new(cell.position.x - 16., cell.position.y - 16.), cell_snap);
+    neighbour_count += check_neighbour(Cell::new(cell.position.x - 16., cell.position.y - 16.), cell_snap);
+    neighbour_count += check_neighbour(Cell::new(cell.position.x - 16., cell.position.y - 16.), cell_snap);
+    neighbour_count += check_neighbour(Cell::new(cell.position.x - 16., cell.position.y - 16.), cell_snap);
+    neighbour_count += check_neighbour(Cell::new(cell.position.x - 16., cell.position.y - 16.), cell_snap);
+
+    if neighbour_count == 2 || neighbour_count == 3 {
+        new_snap.push(cell);
+    }
+}
+
+#[derive(Clone)]
+struct Cell {
+    alive: bool,
+    position: na::Point2<f32>,
+}
+
+impl Cell {
+    fn new(x: f32, y: f32) -> Cell {
+        Cell {
+            alive: true,
+            position: na::Point2::new(x, y),
+        }
+    }
+
+    fn is_alive(&self) -> bool {
+        self.alive
+    }
+}
+
+impl PartialEq for Cell {
+    fn eq(&self, other: &Self) -> bool {
+        return self.position == other.position;
+    }
+}
+
+
 struct MainState {
-    curr_cell: na::Point2<f32>,
     cell_vec: Vec<Cell>,
 }
 
@@ -76,7 +120,6 @@ struct MainState {
 impl MainState {
     fn new(ctx: &mut Context) -> Self {
         MainState { 
-            curr_cell: na::Point2::new(GRID_CELL_SIZE.0, GRID_CELL_SIZE.1),
             cell_vec: new_random_cells(ctx),
         }
     }
@@ -84,8 +127,21 @@ impl MainState {
 
 impl event::EventHandler for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
-        // self.curr_cell.x += GRID_CELL_SIZE.0;
-        // self.cell_vec.push(Cell::new(self.curr_cell.clone()));
+        let cell_snap = self.cell_vec.clone();
+        let mut new_snap: Vec<Cell> = vec![];
+
+        for cell in cell_snap.clone() {
+            calculate_alive_or_dead(cell, &cell_snap, &mut new_snap);
+        }
+
+        self.cell_vec = new_snap;
+
+        println!("Priting updated vector.");
+
+        for cell in self.cell_vec.clone() {
+            println!("{}", cell.position);
+        }
+
         Ok(())
     }
 
@@ -93,7 +149,7 @@ impl event::EventHandler for MainState {
         graphics::clear(ctx, graphics::BLACK);
 
         for cell in self.cell_vec.clone() {
-            draw_cell(ctx, cell)?;
+            draw_cell(ctx, cell.position)?;
         }
 
         graphics::present(ctx)?;
