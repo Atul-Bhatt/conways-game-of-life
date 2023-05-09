@@ -86,20 +86,14 @@ fn calculate_alive_or_dead(cell: Cell, cell_snap: &Vec<Cell>, new_snap: &mut Vec
 
 #[derive(Clone)]
 struct Cell {
-    alive: bool,
     position: na::Point2<f32>,
 }
 
 impl Cell {
     fn new(x: f32, y: f32) -> Cell {
         Cell {
-            alive: true,
             position: na::Point2::new(x, y),
         }
-    }
-
-    fn is_alive(&self) -> bool {
-        self.alive
     }
 }
 
