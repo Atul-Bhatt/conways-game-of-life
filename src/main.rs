@@ -149,7 +149,9 @@ impl event::EventHandler for MainState {
 fn main() -> GameResult {
     let cb = ggez::ContextBuilder::new("Game_of_Life", "Atul");
     let (mut ctx, mut event_loop) = cb.build()?;
+    
     graphics::set_window_title(&ctx, "Conway's Game of Life.");
+    
     let mut state = MainState::new(&mut ctx);
     event::run(&mut ctx, &mut event_loop, &mut state)
 }
